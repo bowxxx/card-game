@@ -1,0 +1,226 @@
+/* Ember Court: the gilded table. Deep green felt, gold trim, and cards whose house
+   is told by colour and shape at a glance. Everything is local: system fonts only. */
+
+* { box-sizing: border-box; }
+html, body { margin: 0; height: 100%; overflow: hidden; background: #0d1f14; }
+body { font-family: "Segoe UI", system-ui, -apple-system, sans-serif; color: #f4ead2; }
+#status { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
+
+#table {
+  position: fixed; inset: 0;
+  display: flex; flex-direction: column;
+  background:
+    radial-gradient(ellipse 90% 70% at 50% 38%, #2c6b41 0%, #1d4d2b 55%, #123420 100%);
+}
+#table::before {
+  content: ""; position: absolute; inset: 14px;
+  border: 3px solid rgba(212, 175, 55, 0.55); border-radius: 18px;
+  pointer-events: none;
+}
+
+/* --- top bar --- */
+.topbar {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 10px 34px 6px; z-index: 2;
+}
+.brand { font-family: Georgia, "Times New Roman", serif; font-size: 22px; letter-spacing: 4px; color: #d4af37; }
+.turn-line { font-size: 15px; color: #f4ead2; opacity: 0.95; }
+.score-line { font-size: 15px; display: flex; align-items: center; gap: 12px; }
+.score-line b { color: #d4af37; font-size: 19px; }
+.mute-btn {
+  background: transparent; color: #f4ead2; border: 1px solid rgba(244, 234, 210, 0.5);
+  border-radius: 6px; padding: 4px 10px; font-size: 13px; cursor: pointer;
+}
+.mute-btn:hover { border-color: #d4af37; color: #d4af37; }
+
+/* --- duelist rows --- */
+.rival-zone, .player-zone { display: flex; align-items: center; gap: 22px; padding: 4px 34px; z-index: 2; }
+.player-zone { padding-bottom: 12px; }
+.rival-zone { padding-top: 2px; }
+.duelist { width: 225px; flex: none; }
+.avatar {
+  width: 44px; height: 44px; border-radius: 50%; float: left; margin-right: 10px;
+  display: flex; align-items: center; justify-content: center;
+  font-family: Georgia, serif; font-size: 24px; font-weight: bold;
+  background: #7b2d26; color: #f5b7b1; border: 2px solid #d4af37;
+}
+.player-duelist .avatar { background: #1e8449; color: #a9dfbf; }
+.duelist-name { font-family: Georgia, serif; font-size: 18px; padding-top: 2px; }
+.duelist-tag { font-size: 12px; color: rgba(244, 234, 210, 0.7); font-family: inherit; }
+.life-wrap { margin-top: 4px; }
+.life-bar {
+  height: 14px; background: rgba(0, 0, 0, 0.45); border-radius: 7px;
+  border: 1px solid rgba(244, 234, 210, 0.4); overflow: hidden;
+}
+.life-fill { height: 100%; width: 100%; background: linear-gradient(90deg, #c0392b, #e74c3c); transition: width 0.45s ease; }
+.life-fill.low { background: linear-gradient(90deg, #922b21, #c0392b); }
+.life-text { font-size: 13px; margin-top: 3px; font-weight: bold; }
+.shield-badge { min-height: 20px; font-size: 13px; color: #aed6f1; font-weight: bold; margin-top: 2px; }
+.shield-badge.has-shield::before { content: "◆ "; }
+.energy-row { margin-top: 2px; font-size: 13px; min-height: 20px; }
+.energy-pip { color: rgba(244, 234, 210, 0.25); font-size: 15px; margin-right: 2px; }
+.energy-pip.lit { color: #f5c542; text-shadow: 0 0 6px rgba(245, 197, 66, 0.8); }
+.energy-text { margin-left: 6px; font-weight: bold; }
+
+.rival-hand, .player-hand { display: flex; flex: 1; min-width: 0; justify-content: center; align-items: center; }
+.rival-hand .card { margin-left: -16px; }
+.player-hand .card { margin-left: -24px; }
+.player-hand .card:first-child { margin-left: 0; }
+.rival-hand .card:first-child { margin-left: 0; }
+.intent {
+  width: 225px; flex: none; font-size: 14px; font-style: italic;
+  color: #f5c542; min-height: 20px; text-align: right;
+}
+.end-turn {
+  flex: none; width: 150px; padding: 12px 8px; font-size: 15px; font-weight: bold;
+  color: #1d4d2b; background: #d4af37; border: none; border-radius: 10px; cursor: pointer;
+  box-shadow: 0 3px 0 #9a7b24;
+}
+.end-turn:hover:not(:disabled) { background: #e5c04a; }
+.end-turn:disabled { opacity: 0.45; cursor: default; box-shadow: none; }
+.key-hint { font-size: 11px; opacity: 0.7; font-weight: normal; }
+
+/* --- middle of the table --- */
+.middle-zone {
+  flex: 1; display: flex; align-items: center; gap: 26px;
+  padding: 6px 34px; z-index: 2; min-height: 120px;
+}
+.played-slot { width: 225px; flex: none; display: flex; justify-content: center; }
+.played-hint {
+  color: rgba(244, 234, 210, 0.45); font-style: italic; font-size: 14px;
+  border: 2px dashed rgba(244, 234, 210, 0.3); border-radius: 12px; padding: 26px 14px;
+}
+.table-log { flex: 1; font-size: 14px; line-height: 1.55; color: rgba(244, 234, 210, 0.92); }
+.table-log div:last-child { color: #f5c542; }
+
+/* --- cards --- */
+.card {
+  position: relative; width: 118px; height: 168px; flex: none;
+  border-radius: 12px; border: 2px solid #d4af37; cursor: pointer;
+  font-family: inherit; text-align: left; padding: 0;
+  background: linear-gradient(160deg, #fdf6e3 0%, #f3e5c0 100%);
+  color: #2c1e10;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.45);
+  transition: transform 0.18s ease, box-shadow 0.18s ease;
+}
+.card.playable:hover { transform: translateY(-16px) rotate(-1deg); box-shadow: 0 12px 20px rgba(0, 0, 0, 0.55); }
+.card.unplayable { opacity: 0.62; cursor: default; }
+.card.ember { border-top: 8px solid #c0392b; }
+.card.tide { border-top: 8px solid #2471a3; }
+.card.gale { border-top: 8px solid #1e8449; }
+.card-cost {
+  position: absolute; top: 8px; left: 8px; width: 28px; height: 28px; border-radius: 50%;
+  background: #2c6b41; color: #fff; font-weight: bold; font-size: 16px;
+  display: flex; align-items: center; justify-content: center;
+  border: 2px solid #d4af37;
+}
+.card-house { position: absolute; top: 8px; right: 8px; width: 28px; height: 28px; }
+.card-house svg { width: 28px; height: 28px; }
+.card-name {
+  position: absolute; top: 44px; left: 8px; right: 8px;
+  font-family: Georgia, serif; font-weight: bold; font-size: 15px; line-height: 1.15;
+}
+.card-power {
+  position: absolute; top: 70px; left: 0; right: 0; text-align: center;
+  font-family: Georgia, serif; font-size: 42px; font-weight: bold; line-height: 1;
+}
+.card.ember .card-power { color: #c0392b; }
+.card.tide .card-power { color: #2471a3; }
+.card.gale .card-power { color: #1e8449; }
+.card-blurb {
+  position: absolute; bottom: 22px; left: 10px; right: 10px;
+  font-size: 12px; line-height: 1.3; color: #4a3b28; text-align: center;
+}
+.card-key {
+  position: absolute; bottom: 6px; right: 8px; font-size: 11px; color: #8a7a5a;
+}
+.card.back {
+  width: 88px; height: 126px; cursor: default;
+  background: repeating-linear-gradient(45deg, #7b2d26 0 10px, #922b21 10px 20px);
+  border-color: #d4af37;
+}
+.card-back-mark {
+  position: absolute; inset: 10px; border: 2px solid rgba(212, 175, 55, 0.8); border-radius: 8px;
+  display: flex; align-items: center; justify-content: center;
+  font-family: Georgia, serif; font-size: 26px; color: #d4af37; letter-spacing: 2px;
+}
+.card.played { transform: rotate(-2deg); cursor: default; animation: cardLand 0.35s ease; }
+@keyframes cardLand {
+  from { transform: translateY(-30px) rotate(6deg) scale(1.08); opacity: 0.4; }
+  to { transform: translateY(0) rotate(-2deg) scale(1); opacity: 1; }
+}
+.player-hand .card:nth-child(odd) { transform: rotate(-1.5deg); }
+.player-hand .card:nth-child(even) { transform: rotate(1.5deg); }
+.player-hand .card.playable:hover { transform: translateY(-16px) rotate(0deg); }
+
+/* --- overlays: title, win, loss --- */
+.overlay {
+  position: absolute; inset: 0; z-index: 5; display: none;
+  align-items: center; justify-content: center;
+  background: rgba(10, 26, 16, 0.72);
+}
+.overlay.visible { display: flex; }
+.overlay-card {
+  width: 620px; max-width: 92vw; text-align: center; padding: 34px 40px 28px;
+  background: linear-gradient(165deg, #fdf6e3, #f3e5c0); color: #2c1e10;
+  border: 3px solid #d4af37; border-radius: 18px; box-shadow: 0 18px 50px rgba(0, 0, 0, 0.6);
+}
+.overlay-kicker { letter-spacing: 3px; text-transform: uppercase; font-size: 13px; color: #7b2d26; font-weight: bold; }
+.overlay-card h1 {
+  font-family: Georgia, serif; font-size: 58px; line-height: 1.02; margin: 10px 0 8px; color: #1d4d2b;
+}
+.end-card h1 { font-size: 52px; }
+.overlay-sub { font-size: 16px; line-height: 1.5; margin: 6px 0 14px; }
+.rules-list { text-align: left; font-size: 14px; line-height: 1.6; margin: 0 auto 12px; width: 480px; max-width: 100%; }
+.rules-list li { margin-bottom: 4px; }
+.best-line { font-size: 14px; font-style: italic; color: #6b5a3a; }
+.big-btn {
+  margin-top: 8px; padding: 14px 34px; font-size: 19px; font-weight: bold;
+  color: #fdf6e3; background: #1d4d2b; border: 2px solid #d4af37; border-radius: 12px; cursor: pointer;
+}
+.big-btn:hover { background: #2c6b41; }
+.hint-line { font-size: 13px; color: #6b5a3a; margin: 10px 0 0; }
+.stats-list {
+  display: flex; justify-content: center; gap: 26px; margin: 12px 0 6px; flex-wrap: wrap;
+}
+.stats-list div { text-align: center; }
+.stats-list dt { font-size: 12px; text-transform: uppercase; letter-spacing: 1px; color: #6b5a3a; }
+.stats-list dd { font-family: Georgia, serif; font-size: 26px; font-weight: bold; margin: 2px 0 0; color: #1d4d2b; }
+
+/* --- effects layer: floating numbers, confetti, shakes --- */
+.fx-layer { position: absolute; inset: 0; z-index: 8; pointer-events: none; overflow: hidden; }
+.float-num {
+  position: absolute; transform: translateX(-50%);
+  font-family: Georgia, serif; font-size: 26px; font-weight: bold;
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.6);
+  animation: floatUp 1.4s ease-out forwards;
+}
+.float-num.damage { color: #ff6b5e; }
+.float-num.heal { color: #7ee2a0; }
+.float-num.shield { color: #8fc7ec; }
+@keyframes floatUp {
+  from { opacity: 1; transform: translate(-50%, 0); }
+  to { opacity: 0; transform: translate(-50%, -56px); }
+}
+.confetti {
+  position: absolute; top: -12px; width: 9px; height: 14px; border-radius: 2px;
+  animation: confettiFall linear forwards;
+}
+@keyframes confettiFall {
+  from { transform: translateY(0) rotate(0deg); opacity: 1; }
+  to { transform: translateY(105vh) rotate(540deg); opacity: 0.7; }
+}
+#table.shake { animation: shakeSoft 0.3s ease; }
+#table.shake-hard { animation: shakeHard 0.45s ease; }
+@keyframes shakeSoft {
+  0%, 100% { transform: translateX(0); }
+  25% { transform: translateX(-4px); }
+  75% { transform: translateX(4px); }
+}
+@keyframes shakeHard {
+  0%, 100% { transform: translateX(0); }
+  20% { transform: translateX(-9px); }
+  40% { transform: translateX(8px); }
+  60% { transform: translateX(-6px); }
+  80% { transform: translateX(4px); }
+}
